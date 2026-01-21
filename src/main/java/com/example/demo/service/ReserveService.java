@@ -1,19 +1,8 @@
 package com.example.demo.service;
 
-import com.example.demo.domain.Dto.TicketReserveRequestDto;
-import com.example.demo.domain.Dto.TicketReserveResponseDto;
-import com.example.demo.domain.PerformanceSeatRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import com.example.demo.domain.Dto.ReserveRequestDto;
+import com.example.demo.domain.Dto.ReserveResponseDto;
 
-@Service
-@RequiredArgsConstructor
-public class ReserveService {
-
-    PerformanceSeatRepository ticketRepository;
-
-    public TicketReserveResponseDto reserve(TicketReserveRequestDto request){
-        return new TicketReserveResponseDto();
-    }
+public interface ReserveService {
+    ReserveResponseDto reserve(ReserveRequestDto request);
 }
-

@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class TicketReserveResponseDto {
+public class ReserveResponseDto {
 
     String TicketName;
 

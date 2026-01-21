@@ -1,24 +1,20 @@
 package com.example.demo.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 @Entity
-public class Ticket {
+public class PerformanceSeat {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String ticketName;
-
-    private String ticketCode;
+    @OneToOne(fetch = FetchType.LAZY)
+    private Schedule schedule;
 
     private String seatNumber;
 

@@ -9,19 +9,14 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Entity
-public class Reservation {
+public class Schedule {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    private PerformanceSeat ticket;
+    private Performance performance;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    private User user;
-
-    private String reserveStatus;
-
-    private LocalDateTime reserveAt;
+    private LocalDateTime dateTime;
 }

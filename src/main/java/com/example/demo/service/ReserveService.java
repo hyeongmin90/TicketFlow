@@ -1,22 +1,18 @@
-package com.example.demo;
+package com.example.demo.service;
 
 import com.example.demo.domain.Dto.TicketReserveRequestDto;
 import com.example.demo.domain.Dto.TicketReserveResponseDto;
-import com.example.demo.domain.Ticket;
-import com.example.demo.domain.TicketRepository;
+import com.example.demo.domain.PerformanceSeatRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Service
 @RequiredArgsConstructor
-public class TicketService {
+public class ReserveService {
 
-    TicketRepository ticketRepository;
+    PerformanceSeatRepository ticketRepository;
 
     public TicketReserveResponseDto reserve(TicketReserveRequestDto request){
-        Optional<Ticket>
         return new TicketReserveResponseDto();
     }
 }

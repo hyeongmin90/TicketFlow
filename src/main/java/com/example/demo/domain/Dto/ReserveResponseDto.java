@@ -1,17 +1,18 @@
 package com.example.demo.domain.Dto;
 
+import com.example.demo.domain.Schedule;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@Builder
 public class ReserveResponseDto {
 
-    String TicketName;
+    private Schedule schedule;
 
-    String TicketCode;
+    private String seatNumber;
 
-    String SeatNumber;
-
-    String Status;
+    private String reserveStatus;
 }

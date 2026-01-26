@@ -16,7 +16,7 @@ public class Reservation {
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    private PerformanceSeat ticket;
+    private PerformanceSeat performanceSeat;
 
     @OneToOne(fetch = FetchType.LAZY)
     private User user;

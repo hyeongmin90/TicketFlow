@@ -1,12 +1,25 @@
 package com.example.demo.domain.Dto;
 
+import com.example.demo.domain.User;
+import lombok.Builder;
 import lombok.Getter;
 
 @Getter
+@Builder
 public class ReserveRequestDto {
-    String Name;
+    private String name;
 
-    String PhoneNumber;
+    private String phoneNumber;
 
-    String Password;
+    private String password;
+
+    private Long seatId;
+
+    public User toEntity(ReserveRequestDto requestDto){
+        User user = new User();
+        user.setName(requestDto.getName());
+        user.setPhoneNumber(requestDto.getPhoneNumber());
+        user.setPassword(requestDto.getPassword());
+        return user;
+    }
 }

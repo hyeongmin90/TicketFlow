@@ -1,7 +1,6 @@
 package com.example.demo.infra;
 
-import com.example.demo.domain.Dto.VenueCreateRequestDto;
-import com.example.demo.domain.Dto.VenueCreateResponseDto;
+import com.example.demo.domain.Dto.*;
 import com.example.demo.service.ManagementService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,16 +16,22 @@ public class ManagementController {
 
     private final ManagementService managementService;
 
-    @PostMapping("/venue/add")
-    public ResponseEntity<VenueCreateResponseDto> addVenue(@RequestBody VenueCreateRequestDto requestDto){
+    @PostMapping("/venue/create")
+    public ResponseEntity<VenueCreateResponseDto> createVenue(@RequestBody VenueCreateRequestDto requestDto){
         VenueCreateResponseDto responseDto = managementService.createVenue(requestDto);
         return ResponseEntity.ok(responseDto);
     }
 
-    @PostMapping("/schedule/add")
-    public ResponseEntity<?> createSchedule (){
+    @PostMapping("/performance/create")
+    public ResponseEntity<PerformanceCreateResponseDto> createPerformance(@RequestBody PerformanceCreateRequestDto requestDto){
+        PerformanceCreateResponseDto releasePerformanceResponseDto = managementService.createPerformance(requestDto);
+        return ResponseEntity.ok(releasePerformanceResponseDto);
+    }
 
-        return ResponseEntity.ok();
+    @PostMapping("/schedule/create")
+    public ResponseEntity<ScheduleCreateResponseDto> createSchedule (@RequestBody ScheduleCreateRequestDto requestDto){
+        ScheduleCreateResponseDto responseDto = managementService.createSchedule(requestDto);
+        return ResponseEntity.ok(responseDto);
     }
 
 }

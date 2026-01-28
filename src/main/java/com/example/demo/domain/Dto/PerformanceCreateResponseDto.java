@@ -9,8 +9,8 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Builder
-public class ReleasePerformanceResponseDto {
+public class PerformanceCreateResponseDto {
     String name;
 
-    LocalDateTime releaseAt;
+    LocalDateTime createAt;
 }

@@ -1,16 +1,15 @@
 package com.example.demo.service;
 
-import com.example.demo.domain.Dto.VenueCreateRequestDto;
-import com.example.demo.domain.Dto.VenueCreateResponseDto;
-import com.example.demo.domain.Seat;
-import com.example.demo.domain.Venue;
-import com.example.demo.domain.repository.SeatBatchRepository;
-import com.example.demo.domain.repository.VenueRepository;
+import com.example.demo.domain.*;
+import com.example.demo.domain.Dto.*;
+import com.example.demo.domain.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +17,9 @@ public class ManagementServiceImp implements ManagementService{
 
     private final SeatBatchRepository seatBatchRepository;
     private final VenueRepository venueRepository;
+    private final PerformanceRepository performanceRepository;
+    private final ScheduleRepository scheduleRepository;
+    private final PerformanceSeatBatchRepository performanceSeatBatchRepository;
 
     @Override
     public VenueCreateResponseDto createVenue(VenueCreateRequestDto requestDto) {
@@ -63,7 +65,53 @@ public class ManagementServiceImp implements ManagementService{
     }
 
     @Override
-    public void createSchedule() {
+    public PerformanceCreateResponseDto createPerformance(PerformanceCreateRequestDto requestDto) {
+        Performance performance = new Performance();
+        performance.setName(requestDto.getName());
+        performanceRepository.save(performance);
+        return PerformanceCreateResponseDto.builder()
+                .name(requestDto.getName())
+                .createAt(LocalDateTime.now())
+                .build();
+    }
 
+    @Override
+    public ScheduleCreateResponseDto createSchedule(ScheduleCreateRequestDto requestDto) {
+        Optional<Performance> performance = performanceRepository.findById(requestDto.getPerformanceId());
+        Optional<Venue> venue = venueRepository.findById(requestDto.getVenueId());
+        if(performance.isEmpty()) throw new IllegalArgumentException("Can not find performance");
+        if(venue.isEmpty()) throw new IllegalArgumentException("Can not find venue");
+        Venue venue1 = venue.get();
+        Performance performance1 = performance.get();
+        Schedule schedule = Schedule.builder()
+                .venue(venue1)
+                .performance(performance1)
+                .startTime(requestDto.getStartTime())
+                .endTime(requestDto.getEndTime())
+                .build();
+
+        scheduleRepository.save(schedule);
+
+        List<Seat> seats = venue1.getSeats();
+        List<PerformanceSeat> performanceSeats = new ArrayList<>();
+        for(Seat seat : seats){
+            PerformanceSeat performanceSeat = PerformanceSeat.builder()
+                    .schedule(schedule)
+                    .seatNumber(seat.getSeatNumber())
+                    .seatStatus(SeatStatus.AVAILABLE)
+                    .price(requestDto.getTicketPrice())
+                    .build();
+            performanceSeats.add(performanceSeat);
+        }
+
+        performanceSeatBatchRepository.batchInsertPerformanceSeats(performanceSeats);
+
+        return ScheduleCreateResponseDto.builder()
+                .performanceName(performance1.getName())
+                .venueName(venue1.getName())
+                .venueAddress(venue1.getAddress())
+                .startTime(requestDto.getStartTime())
+                .endTime(requestDto.getEndTime())
+                .build();
     }
 }

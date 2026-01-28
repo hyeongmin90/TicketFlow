@@ -1,13 +1,10 @@
 package com.example.demo.service;
 
-import com.example.demo.domain.Dto.ReleasePerformanceRequestDto;
-import com.example.demo.domain.Dto.ReleasePerformanceResponseDto;
+import com.example.demo.domain.*;
+import com.example.demo.domain.Dto.PerformanceCreateRequestDto;
+import com.example.demo.domain.Dto.PerformanceCreateResponseDto;
 import com.example.demo.domain.Dto.ReserveRequestDto;
 import com.example.demo.domain.Dto.ReserveResponseDto;
-import com.example.demo.domain.Performance;
-import com.example.demo.domain.PerformanceSeat;
-import com.example.demo.domain.Reservation;
-import com.example.demo.domain.User;
 import com.example.demo.domain.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -36,9 +33,8 @@ public class ReserveServiceImp implements ReserveService{
             userRepository.save(reserveUser);
         }
         else reserveUser = user.get();
-        
-        Long seatId = requestDto.getSeatId();
-        Optional<PerformanceSeat> seat = performanceSeatRepository.findById(seatId);
+
+        Optional<PerformanceSeat> seat = performanceSeatRepository.findById(requestDto.getSeatId());
         if (seat.isEmpty()) throw new IllegalArgumentException("Can not find Seat");
         PerformanceSeat performanceSeat = seat.get();
         Reservation reservation = getReservation(performanceSeat, reserveUser);
@@ -51,28 +47,20 @@ public class ReserveServiceImp implements ReserveService{
                 .build();
     }
 
-    @Override
-    public ReleasePerformanceResponseDto releasePerformance(ReleasePerformanceRequestDto requestDto) {
-        Performance performance = new Performance();
-        performance.setName(requestDto.getName());
-        performanceRepository.save(performance);
-        return ReleasePerformanceResponseDto.builder()
-                .name(requestDto.getName())
-                .releaseAt(LocalDateTime.now())
-                .build();
-    }
+
 
     private static Reservation getReservation(PerformanceSeat seat, User reserveUser) {
-        if (!seat.getStatus().equals("AVAILABLE")){
+        if (seat.getSeatStatus() != SeatStatus.AVAILABLE){
             throw new IllegalArgumentException("This Seat Already Reserved");
         }
-        seat.setStatus("RESERVED");
+        seat.setSeatStatus(SeatStatus.PENDING);
 
-        Reservation reservation = new Reservation();
-        reservation.setUser(reserveUser);
-        reservation.setPerformanceSeat(seat);
-        reservation.setReserveStatus("RESERVED");
-        return reservation;
+        return Reservation.builder()
+                .user(reserveUser)
+                .performanceSeat(seat)
+                .reserveStatus("RESERVED")
+                .reserveAt(LocalDateTime.now())
+                .build();
     }
 }
 

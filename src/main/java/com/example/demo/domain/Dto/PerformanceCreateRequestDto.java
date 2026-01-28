@@ -5,6 +5,6 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class ReleasePerformanceRequestDto {
+public class PerformanceCreateRequestDto {
     private String name;
 }

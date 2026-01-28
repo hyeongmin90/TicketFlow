@@ -1,7 +1,10 @@
 package com.example.demo.service;
 
-public interface ManagementService {
-    void RegistrationVenue();
+import com.example.demo.domain.Dto.VenueCreateRequestDto;
+import com.example.demo.domain.Dto.VenueCreateResponseDto;
 
-    void RegistrationSchedule();
+public interface ManagementService {
+    VenueCreateResponseDto createVenue(VenueCreateRequestDto requestDto);
+
+    void createSchedule();
 }

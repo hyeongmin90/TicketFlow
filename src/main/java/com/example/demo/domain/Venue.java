@@ -1,8 +1,7 @@
 package com.example.demo.domain;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +9,9 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Venue {
 
     @Id
@@ -19,6 +21,6 @@ public class Venue {
     private String name;
     private String address;
 
-    @OneToMany(mappedBy = "venue", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "venue", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Seat> seats = new ArrayList<>();
 }

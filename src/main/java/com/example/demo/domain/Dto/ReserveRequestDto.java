@@ -1,11 +1,13 @@
 package com.example.demo.domain.Dto;
 
 import com.example.demo.domain.User;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 
+@Setter
 @Getter
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class ReserveRequestDto {
     private String name;
 

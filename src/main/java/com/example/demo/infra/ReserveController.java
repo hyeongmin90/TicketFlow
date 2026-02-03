@@ -18,13 +18,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class ReserveController {
 
     private final ReserveServiceImp reserveService;
+    private final RedissonLockTicketFacade redissonLockTicketFacade;
 
     @PostMapping("/reserve")
     public ResponseEntity<ReserveResponseDto> reserveTicket(@RequestBody ReserveRequestDto requestDto){
-        ReserveResponseDto reserveResponse = reserveService.reserve(requestDto);
+        ReserveResponseDto reserveResponse = redissonLockTicketFacade.reserveTicket(requestDto);
         return ResponseEntity.ok(reserveResponse);
     }
-
 
 
 }

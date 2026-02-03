@@ -10,7 +10,9 @@ import lombok.Setter;
 @Builder
 public class ReserveResponseDto {
 
-    private Schedule schedule;
+    private String performanceName;
+
+    private String venueAddress;
 
     private String seatNumber;
 

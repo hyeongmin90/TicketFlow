@@ -3,17 +3,18 @@ package com.example.demo.service;
 import com.example.demo.domain.*;
 import com.example.demo.domain.Dto.*;
 import com.example.demo.domain.repository.*;
+
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class ManagementServiceImp implements ManagementService{
+public class ManagementServiceImp implements ManagementService {
 
     private final SeatBatchRepository seatBatchRepository;
     private final VenueRepository venueRepository;
@@ -22,6 +23,7 @@ public class ManagementServiceImp implements ManagementService{
     private final PerformanceSeatBatchRepository performanceSeatBatchRepository;
 
     @Override
+    @Transactional
     public VenueCreateResponseDto createVenue(VenueCreateRequestDto requestDto) {
         Venue venue = Venue.builder()
                 .name(requestDto.getName())
@@ -31,8 +33,8 @@ public class ManagementServiceImp implements ManagementService{
         Venue savedVenue = venueRepository.save(venue);
 
         List<Seat> seats = new ArrayList<>();
-        for(int row = 1; row <= requestDto.getRowCount(); row++){
-            for(int col = 1; col <= requestDto.getColCount(); col++){
+        for (int row = 1; row <= requestDto.getRowCount(); row++) {
+            for (int col = 1; col <= requestDto.getColCount(); col++) {
                 String seatNumber = String.format("%s-%d", toAlphabet(row), col);
 
                 Seat seat = Seat.builder()
@@ -58,13 +60,14 @@ public class ManagementServiceImp implements ManagementService{
         StringBuilder sb = new StringBuilder();
         while (n > 0) {
             int remainder = (n - 1) % 26;
-            sb.insert(0, (char)('A' + remainder));
+            sb.insert(0, (char) ('A' + remainder));
             n = (n - 1) / 26;
         }
         return sb.toString();
     }
 
     @Override
+    @Transactional
     public PerformanceCreateResponseDto createPerformance(PerformanceCreateRequestDto requestDto) {
         Performance performance = new Performance();
         performance.setName(requestDto.getName());
@@ -76,25 +79,25 @@ public class ManagementServiceImp implements ManagementService{
     }
 
     @Override
+    @Transactional
     public ScheduleCreateResponseDto createSchedule(ScheduleCreateRequestDto requestDto) {
-        Optional<Performance> performance = performanceRepository.findById(requestDto.getPerformanceId());
-        Optional<Venue> venue = venueRepository.findById(requestDto.getVenueId());
-        if(performance.isEmpty()) throw new IllegalArgumentException("Can not find performance");
-        if(venue.isEmpty()) throw new IllegalArgumentException("Can not find venue");
-        Venue venue1 = venue.get();
-        Performance performance1 = performance.get();
+        Performance performance = performanceRepository.findById(requestDto.getPerformanceId())
+                .orElseThrow(() -> new IllegalArgumentException("Can not find performance"));
+        Venue venue = venueRepository.findById(requestDto.getVenueId())
+                .orElseThrow(() -> new IllegalArgumentException("Can not find venue"));
+
         Schedule schedule = Schedule.builder()
-                .venue(venue1)
-                .performance(performance1)
+                .venue(venue)
+                .performance(performance)
                 .startTime(requestDto.getStartTime())
                 .endTime(requestDto.getEndTime())
                 .build();
 
         scheduleRepository.save(schedule);
 
-        List<Seat> seats = venue1.getSeats();
+        List<Seat> seats = venue.getSeats();
         List<PerformanceSeat> performanceSeats = new ArrayList<>();
-        for(Seat seat : seats){
+        for (Seat seat : seats) {
             PerformanceSeat performanceSeat = PerformanceSeat.builder()
                     .schedule(schedule)
                     .seatNumber(seat.getSeatNumber())
@@ -107,9 +110,9 @@ public class ManagementServiceImp implements ManagementService{
         performanceSeatBatchRepository.batchInsertPerformanceSeats(performanceSeats);
 
         return ScheduleCreateResponseDto.builder()
-                .performanceName(performance1.getName())
-                .venueName(venue1.getName())
-                .venueAddress(venue1.getAddress())
+                .performanceName(performance.getName())
+                .venueName(venue.getName())
+                .venueAddress(venue.getAddress())
                 .startTime(requestDto.getStartTime())
                 .endTime(requestDto.getEndTime())
                 .build();

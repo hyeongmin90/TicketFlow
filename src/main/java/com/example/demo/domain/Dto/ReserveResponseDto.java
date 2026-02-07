@@ -1,6 +1,5 @@
 package com.example.demo.domain.Dto;
 
-import com.example.demo.domain.Schedule;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;

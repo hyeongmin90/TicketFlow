@@ -1,4 +1,4 @@
-package com.example.demo.infra;
+package com.example.demo.service;
 
 import com.example.demo.domain.Dto.ReserveRequestDto;
 import com.example.demo.domain.Dto.ReserveResponseDto;
@@ -6,16 +6,21 @@ import com.example.demo.domain.PerformanceSeat;
 import com.example.demo.domain.SeatStatus;
 import com.example.demo.domain.User;
 import com.example.demo.domain.repository.PerformanceSeatRepository;
-import com.example.demo.service.ReserveService;
-import com.example.demo.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.connection.stream.RecordId;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.hash.JacksonHashMapper;
+import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-@Configuration
+@Service
+@Slf4j
 @RequiredArgsConstructor
 public class RedissonLockTicketFacade {
 
@@ -23,10 +28,13 @@ public class RedissonLockTicketFacade {
     private final ReserveService reserveService;
     private final UserService userService;
     private final PerformanceSeatRepository performanceSeatRepository;
+    private final RedisTemplate<String, String> redisTemplate;
+    private final JacksonHashMapper jacksonHashMapper;
 
-    public ReserveResponseDto reserveTicket(ReserveRequestDto requestDto) {
+    public void reserveTicket(ReserveRequestDto requestDto, String messageId) {
+        String idempotencyKey = "processed:msg:" + messageId;
+
         User user = userService.userRegistration(requestDto);
-
         RLock lock = redissonClient.getLock("lock:seat:" + requestDto.getSeatId());
 
         try {
@@ -40,7 +48,11 @@ public class RedissonLockTicketFacade {
             if (seat.getSeatStatus() != SeatStatus.AVAILABLE)
                 throw new RuntimeException("이미 예매된 좌석");
 
-            return reserveService.reserve(seat.getId(), user);
+            ReserveResponseDto responseDto = reserveService.reserve(seat.getId(), user);
+
+            redisTemplate.opsForValue().set(idempotencyKey, "COMPLETED", Duration.ofDays(1));
+
+            sendToStream(responseDto);
 
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
@@ -49,5 +61,12 @@ public class RedissonLockTicketFacade {
                 lock.unlock();
             }
         }
+    }
+    private void sendToStream(ReserveResponseDto dto) {
+        if(dto == null) return;
+        Map<String, Object> hash = jacksonHashMapper.toHash(dto);
+        RecordId recordId = redisTemplate.opsForStream().add("reserve:result", hash);
+
+        log.info("Reserve result record sent to stream: {}", recordId);
     }
 }

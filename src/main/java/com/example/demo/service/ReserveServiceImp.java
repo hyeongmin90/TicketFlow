@@ -21,14 +21,14 @@ public class ReserveServiceImp implements ReserveService {
 
     private final PerformanceSeatRepository performanceSeatRepository;
     private final ReservationRepository reservationRepository;
-    private final JacksonHashMapper jacksonHashMapper;
-    private final RedisTemplate<String, Object> streamRedisTemplate;
+
 
     @Override
     @Transactional
     public ReserveResponseDto reserve(Long seatId, User user) {
         PerformanceSeat seat = performanceSeatRepository.findById(seatId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 좌석"));
+
         if (seat.getSeatStatus() != SeatStatus.AVAILABLE)
             throw new IllegalArgumentException("This Seat Already Reserved");
 
@@ -37,7 +37,7 @@ public class ReserveServiceImp implements ReserveService {
         Reservation reservation = getReservation(seat, user);
         reservationRepository.save(reservation);
 
-        ReserveResponseDto responseDto = ReserveResponseDto.builder()
+        return ReserveResponseDto.builder()
                 .name(user.getName())
                 .phoneNumber(user.getPhoneNumber())
                 .performanceName(seat.getSchedule().getPerformance().getName())
@@ -45,10 +45,6 @@ public class ReserveServiceImp implements ReserveService {
                 .seatNumber(seat.getSeatNumber())
                 .reserveStatus("RESERVED")
                 .build();
-
-        sendToStream(responseDto);
-
-        return responseDto;
     }
 
     private Reservation getReservation(PerformanceSeat seat, User reserveUser) {
@@ -58,14 +54,5 @@ public class ReserveServiceImp implements ReserveService {
                 .reserveStatus("RESERVED")
                 .reserveAt(LocalDateTime.now())
                 .build();
-    }
-
-    private void sendToStream(ReserveResponseDto dto) {
-        Map<String, Object> hash = jacksonHashMapper.toHash(dto);
-
-        RecordId recordId = streamRedisTemplate.opsForStream()
-                .add("reserve:result", hash);
-
-        log.info("Reserve result record sent to stream: {}", recordId);
     }
 }

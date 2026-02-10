@@ -9,6 +9,10 @@ import lombok.Setter;
 @Builder
 public class ReserveResponseDto {
 
+    private String name;
+
+    private String phoneNumber;
+
     private String performanceName;
 
     private String venueAddress;

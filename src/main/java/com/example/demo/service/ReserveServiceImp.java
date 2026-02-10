@@ -6,9 +6,13 @@ import com.example.demo.domain.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.connection.stream.RecordId;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.hash.JacksonHashMapper;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -17,6 +21,8 @@ public class ReserveServiceImp implements ReserveService {
 
     private final PerformanceSeatRepository performanceSeatRepository;
     private final ReservationRepository reservationRepository;
+    private final JacksonHashMapper jacksonHashMapper;
+    private final RedisTemplate<String, Object> streamRedisTemplate;
 
     @Override
     @Transactional
@@ -31,23 +37,35 @@ public class ReserveServiceImp implements ReserveService {
         Reservation reservation = getReservation(seat, user);
         reservationRepository.save(reservation);
 
-        return ReserveResponseDto.builder()
+        ReserveResponseDto responseDto = ReserveResponseDto.builder()
+                .name(user.getName())
+                .phoneNumber(user.getPhoneNumber())
                 .performanceName(seat.getSchedule().getPerformance().getName())
                 .venueAddress(seat.getSchedule().getVenue().getAddress())
                 .seatNumber(seat.getSeatNumber())
                 .reserveStatus("RESERVED")
                 .build();
+
+        sendToStream(responseDto);
+
+        return responseDto;
     }
 
-    private static Reservation getReservation(PerformanceSeat seat, User reserveUser) {
-
-        seat.setSeatStatus(SeatStatus.PENDING);
-
+    private Reservation getReservation(PerformanceSeat seat, User reserveUser) {
         return Reservation.builder()
                 .user(reserveUser)
                 .performanceSeat(seat)
                 .reserveStatus("RESERVED")
                 .reserveAt(LocalDateTime.now())
                 .build();
+    }
+
+    private void sendToStream(ReserveResponseDto dto) {
+        Map<String, Object> hash = jacksonHashMapper.toHash(dto);
+
+        RecordId recordId = streamRedisTemplate.opsForStream()
+                .add("reserve:result", hash);
+
+        log.info("Reserve result record sent to stream: {}", recordId);
     }
 }

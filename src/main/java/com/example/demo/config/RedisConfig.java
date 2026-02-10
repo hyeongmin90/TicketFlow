@@ -10,8 +10,7 @@ import org.springframework.data.redis.connection.stream.MapRecord;
 import org.springframework.data.redis.connection.stream.ReadOffset;
 import org.springframework.data.redis.connection.stream.StreamOffset;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.JacksonJsonRedisSerializer;
-import org.springframework.data.redis.serializer.RedisSerializer;
+import org.springframework.data.redis.hash.JacksonHashMapper;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.data.redis.stream.StreamMessageListenerContainer;
 import tools.jackson.databind.json.JsonMapper;
@@ -21,6 +20,8 @@ import java.time.Duration;
 @Configuration
 @RequiredArgsConstructor
 public class RedisConfig {
+
+        private final JsonMapper jsonMapper;
 
         @Bean
         public RedisTemplate<String, Object> streamRedisTemplate(RedisConnectionFactory connectionFactory) {
@@ -69,4 +70,10 @@ public class RedisConfig {
                 container.start();
                 return container;
         }
+
+        @Bean
+        public JacksonHashMapper jacksonHashMapper() {
+                return new JacksonHashMapper(jsonMapper, false);
+        }
+
 }

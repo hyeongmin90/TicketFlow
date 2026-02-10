@@ -1,12 +1,18 @@
 package com.example.demo.infra;
 
 import com.example.demo.domain.Dto.ReserveRequestDto;
+import com.example.demo.domain.Dto.ReserveResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.stream.MapRecord;
+import org.springframework.data.redis.connection.stream.RecordId;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.hash.JacksonHashMapper;
 import org.springframework.data.redis.stream.StreamListener;
 import org.springframework.stereotype.Component;
 import java.util.Map;
+
+import static com.example.demo.infra.Util.hashToDto;
 
 @Component
 @Slf4j
@@ -14,6 +20,7 @@ import java.util.Map;
 public class ReserveStreamListener implements StreamListener<String, MapRecord<String, String, String>> {
 
     private final RedissonLockTicketFacade redissonLockTicketFacade;
+    private final RedisTemplate<String, Object> streamRedisTemplate;
 
     @Override
     public void onMessage(MapRecord<String, String, String> message) {
@@ -22,26 +29,21 @@ public class ReserveStreamListener implements StreamListener<String, MapRecord<S
             log.info("Stream: {}", message.getStream());
             log.info("Record ID: {}", message.getId());
 
-            Map<String, String> hash = message.getValue();
-
-            ReserveRequestDto dto = ReserveRequestDto.builder()
-                    .name(hash.get("name"))
-                    .phoneNumber(hash.get("phoneNumber"))
-                    .password(hash.get("password"))
-                    .seatId(Long.valueOf(hash.get("seatId")))
-                    .build();
+            ReserveRequestDto dto = hashToDto(message);
 
             log.info("Name: {} Phone: {} Seat ID : {}", dto.getName(), dto.getPhoneNumber(), dto.getSeatId());
             processReservation(dto);
+
+            streamRedisTemplate.opsForStream().acknowledge("reserve:1", "reserve-group", message.getId());
         }
         catch (Exception e){
+            log.error("처리 실패: {}", e.getMessage());
             throw new RuntimeException("Error" + e);
         }
-
     }
 
-    private void processReservation(ReserveRequestDto dto) {
+
+    public void processReservation(ReserveRequestDto dto) {
         redissonLockTicketFacade.reserveTicket(dto);
     }
-
 }

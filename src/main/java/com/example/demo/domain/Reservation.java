@@ -20,7 +20,7 @@ public class Reservation {
     @ManyToOne(fetch = FetchType.LAZY)
     private PerformanceSeat performanceSeat;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
     private String reserveStatus;

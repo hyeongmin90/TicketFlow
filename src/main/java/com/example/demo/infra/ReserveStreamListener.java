@@ -1,16 +1,14 @@
 package com.example.demo.infra;
 
 import com.example.demo.domain.Dto.ReserveRequestDto;
-import com.example.demo.domain.Dto.ReserveResponseDto;
+import com.example.demo.service.RedissonLockTicketFacade;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.stream.MapRecord;
-import org.springframework.data.redis.connection.stream.RecordId;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.hash.JacksonHashMapper;
 import org.springframework.data.redis.stream.StreamListener;
 import org.springframework.stereotype.Component;
-import java.util.Map;
+
 
 import static com.example.demo.infra.Util.hashToDto;
 
@@ -32,7 +30,7 @@ public class ReserveStreamListener implements StreamListener<String, MapRecord<S
             ReserveRequestDto dto = hashToDto(message);
 
             log.info("Name: {} Phone: {} Seat ID : {}", dto.getName(), dto.getPhoneNumber(), dto.getSeatId());
-            processReservation(dto);
+            processReservation(dto, String.valueOf(message.getId()));
 
             streamRedisTemplate.opsForStream().acknowledge("reserve:1", "reserve-group", message.getId());
         }
@@ -43,7 +41,7 @@ public class ReserveStreamListener implements StreamListener<String, MapRecord<S
     }
 
 
-    public void processReservation(ReserveRequestDto dto) {
-        redissonLockTicketFacade.reserveTicket(dto);
+    public void processReservation(ReserveRequestDto dto, String messageId) {
+        redissonLockTicketFacade.reserveTicket(dto, messageId);
     }
 }

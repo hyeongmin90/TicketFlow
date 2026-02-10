@@ -14,12 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/ticket")
 public class ReserveController {
 
-    private final RedissonLockTicketFacade redissonLockTicketFacade;
 
-    @PostMapping("/reserve")
-    public ResponseEntity<ReserveResponseDto> reserveTicket(@RequestBody ReserveRequestDto requestDto) {
-        ReserveResponseDto reserveResponse = redissonLockTicketFacade.reserveTicket(requestDto);
-        return ResponseEntity.ok(reserveResponse);
-    }
 
 }

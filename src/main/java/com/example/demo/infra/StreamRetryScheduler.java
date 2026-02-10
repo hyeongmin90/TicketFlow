@@ -1,5 +1,6 @@
 package com.example.demo.infra;
 
+import com.example.demo.service.RedissonLockTicketFacade;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Range;
@@ -50,9 +51,26 @@ public class StreamRetryScheduler {
         );
 
         claimed.forEach(record->{
+            String messageId = String.valueOf(record.getId());
+            String idempotencyKey = "processed:reserve:" + messageId;
+
             log.info("Processing claimed message: {}", record.getId());
-            redissonLockTicketFacade.reserveTicket(hashToDto(record));
-            streamOps.acknowledge(streamKey, groupName, record.getId());
+
+            Boolean isNewRequest = redisTemplate.opsForValue()
+                    .setIfAbsent(idempotencyKey, "REPROCESSING", Duration.ofDays(1));
+            if(Boolean.FALSE.equals(isNewRequest)){
+                log.info("Already Processing Message: {}", messageId);
+                streamOps.acknowledge(streamKey, groupName, record.getId());
+                return;
+            }
+            try{
+                redissonLockTicketFacade.reserveTicket(hashToDto(record), String.valueOf(record.getId()));
+                streamOps.acknowledge(streamKey, groupName, record.getId());
+            } catch (Exception e) {
+                log.error("Error: {}", e.getMessage());
+                redisTemplate.delete(idempotencyKey);
+                log.error("처리 실패, 멱등성 키 삭제: {}", messageId);
+            }
         });
     }
 }

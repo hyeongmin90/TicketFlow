@@ -55,6 +55,7 @@ public class RedissonLockTicketFacade {
             sendToStream(responseDto);
 
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             throw new RuntimeException(e);
         } finally {
             if (lock.isHeldByCurrentThread()) {

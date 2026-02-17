@@ -9,6 +9,8 @@ import lombok.Setter;
 @Builder
 public class ReserveResponseDto {
 
+    private Long userId;
+
     private String name;
 
     private String phoneNumber;

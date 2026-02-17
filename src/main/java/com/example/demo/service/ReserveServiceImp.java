@@ -22,7 +22,6 @@ public class ReserveServiceImp implements ReserveService {
     private final PerformanceSeatRepository performanceSeatRepository;
     private final ReservationRepository reservationRepository;
 
-
     @Override
     @Transactional
     public ReserveResponseDto reserve(Long seatId, User user) {
@@ -38,6 +37,7 @@ public class ReserveServiceImp implements ReserveService {
         reservationRepository.save(reservation);
 
         return ReserveResponseDto.builder()
+                .userId(user.getId())
                 .name(user.getName())
                 .phoneNumber(user.getPhoneNumber())
                 .performanceName(seat.getSchedule().getPerformance().getName())

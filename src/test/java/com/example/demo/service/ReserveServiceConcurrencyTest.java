@@ -12,7 +12,6 @@ import com.example.demo.domain.repository.ReservationRepository;
 import com.example.demo.domain.repository.ScheduleRepository;
 import com.example.demo.domain.repository.UserRepository;
 import com.example.demo.domain.repository.VenueRepository;
-import com.example.demo.infra.RedissonLockTicketFacade;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -117,7 +116,7 @@ class ReserveServiceConcurrencyTest {
                             .name("user" + finalI)
                             .build();
 
-                    redissonLockTicketFacade.reserveTicket(request);
+                    redissonLockTicketFacade.reserveTicket(request, "TestId" + finalI);
                     // reserveService.reserve(request);
                     successCount.incrementAndGet();
                 } catch (IllegalArgumentException e) {

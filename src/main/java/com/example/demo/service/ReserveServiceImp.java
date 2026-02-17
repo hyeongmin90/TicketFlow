@@ -6,9 +6,13 @@ import com.example.demo.domain.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.connection.stream.RecordId;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.hash.JacksonHashMapper;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -23,6 +27,7 @@ public class ReserveServiceImp implements ReserveService {
     public ReserveResponseDto reserve(Long seatId, User user) {
         PerformanceSeat seat = performanceSeatRepository.findById(seatId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 좌석"));
+
         if (seat.getSeatStatus() != SeatStatus.AVAILABLE)
             throw new IllegalArgumentException("This Seat Already Reserved");
 
@@ -32,6 +37,9 @@ public class ReserveServiceImp implements ReserveService {
         reservationRepository.save(reservation);
 
         return ReserveResponseDto.builder()
+                .userId(user.getId())
+                .name(user.getName())
+                .phoneNumber(user.getPhoneNumber())
                 .performanceName(seat.getSchedule().getPerformance().getName())
                 .venueAddress(seat.getSchedule().getVenue().getAddress())
                 .seatNumber(seat.getSeatNumber())
@@ -39,10 +47,7 @@ public class ReserveServiceImp implements ReserveService {
                 .build();
     }
 
-    private static Reservation getReservation(PerformanceSeat seat, User reserveUser) {
-
-        seat.setSeatStatus(SeatStatus.PENDING);
-
+    private Reservation getReservation(PerformanceSeat seat, User reserveUser) {
         return Reservation.builder()
                 .user(reserveUser)
                 .performanceSeat(seat)

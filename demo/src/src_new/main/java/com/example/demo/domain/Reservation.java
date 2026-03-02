@@ -1,0 +1,29 @@
+package com.example.demo.domain;
+
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
+@Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class Reservation {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private PerformanceSeat performanceSeat;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private User user;
+
+    private String reserveStatus;
+
+    private LocalDateTime reserveAt;
+}

@@ -1,44 +1,41 @@
 plugins {
-	java
-	id("org.springframework.boot") version "4.0.1"
-	id("io.spring.dependency-management") version "1.1.7"
+    java
+    id("org.springframework.boot") version "4.0.3" apply false
+    id("io.spring.dependency-management") version "1.1.7" apply false
 }
 
-group = "com.example"
-version = "0.0.1-SNAPSHOT"
-description = "Demo project for Spring Boot"
+allprojects {
+    group = "com.example"
+    version = "0.0.1-SNAPSHOT"
 
-java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(21)
-	}
+    repositories {
+        mavenCentral()
+    }
 }
 
-configurations {
-	compileOnly {
-		extendsFrom(configurations.annotationProcessor.get())
-	}
-}
+subprojects {
+    apply(plugin = "java")
+    apply(plugin = "io.spring.dependency-management")
 
-repositories {
-	mavenCentral()
-}
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(21)
+        }
+    }
 
-dependencies {
-	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-	implementation("org.springframework.boot:spring-boot-starter-data-redis")
-//	implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")
-	implementation("org.springframework.boot:spring-boot-starter-webmvc")
-	compileOnly("org.projectlombok:lombok")
-	runtimeOnly("com.mysql:mysql-connector-j")
-	annotationProcessor("org.projectlombok:lombok")
-	testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
-	testImplementation("org.springframework.boot:spring-boot-starter-data-redis-reactive-test")
-	testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
-	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-	implementation("org.redisson:redisson-spring-boot-starter:4.1.0")
-}
+    tasks.withType<Test> {
+        useJUnitPlatform()
+    }
 
-tasks.withType<Test> {
-	useJUnitPlatform()
+    configurations {
+        compileOnly {
+            extendsFrom(configurations.annotationProcessor.get())
+        }
+    }
+
+    dependencies {
+        compileOnly("org.projectlombok:lombok")
+        annotationProcessor("org.projectlombok:lombok")
+        testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    }
 }

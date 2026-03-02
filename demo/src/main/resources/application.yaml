@@ -1,0 +1,36 @@
+redis:
+  stream:
+    key: reserve:1
+    group: reserve-group
+    consumer: worker-1
+
+spring:
+  application:
+    name: demo
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/reserve_db?rewriteBatchedStatements=true&characterEncoding=UTF-8&serverTimezone=UTC
+    username: root
+    password: admin123
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        show_sql: true
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+
+  data:
+    redis:
+      host: localhost
+      port: 6379

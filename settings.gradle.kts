@@ -1,3 +1,3 @@
 rootProject.name = "backend-monorepo"
-include("demo")
+include("ticket-service")
 include("api_server")

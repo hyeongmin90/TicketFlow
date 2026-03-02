@@ -1,0 +1,14 @@
+plugins {
+    id("org.springframework.boot")
+}
+
+dependencies {
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
+    implementation("org.springframework.boot:spring-boot-starter-webmvc")
+    runtimeOnly("com.mysql:mysql-connector-j")
+    testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-data-redis-reactive-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
+    implementation("org.redisson:redisson-spring-boot-starter:4.1.0")
+}
